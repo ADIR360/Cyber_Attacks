@@ -1145,7 +1145,26 @@ Recommendation: Immediate patching required!
                 aboutContainer.style.display = 'block';
                 setTimeout(() => {
                     aboutContainer.classList.add('show');
+                    
+                    // Auto-scroll to the about section
+                    smoothScrollTo(aboutContainer);
                 }, 10);
                 aboutBtn.innerHTML = '<span>✖️</span> Close';
+            }
+        }
+
+        // Smooth scroll utility function
+        function smoothScrollTo(element) {
+            if ('scrollBehavior' in document.documentElement.style) {
+                // Modern browsers - use scrollIntoView
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            } else {
+                // Fallback for older browsers
+                const elementPosition = element.offsetTop - 100;
+                window.scrollTo(0, elementPosition);
             }
         }

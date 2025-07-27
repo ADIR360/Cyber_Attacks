@@ -280,9 +280,7 @@ Passionate about ethical hacking, network security, and full-stack development. 
 - **Security Research**: Ongoing exploration of emerging threats
 
 ### 📧 Get In Touch
-- **GitHub**: [@yourusername](https://github.com/ADIR360)
-- **LinkedIn**: [Arush Dubey](https://linkedin.com/arush-dubey-358840244)
-- **Email**: [your.email@example.com](mailto:your.arushdubey360@gmail.com)
+- **Email**: [arushdubey360@gmail.com](mailto:arushdubey360@gmail.com)
 
 ## 📄 License
 
