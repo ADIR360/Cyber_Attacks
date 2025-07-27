@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive Cybersecurity Threat Matrix - Learn about cyber threats, attacks, and security through hands-on simulations">
+    <meta name="keywords" content="cybersecurity, cyber threats, security training, interactive learning, cyber attacks">
+    <title>Cybersecurity Threat Matrix - Professional Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: auto;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Matrix Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .video-background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.15;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(10,10,10,0.9) 50%, rgba(0,0,0,0.8) 100%);
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 2px solid #00ff41;
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .header.hidden {
+            transform: translateY(-100%);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .header-left {
+            text-align: left;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41;
+            margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #cccccc;
+            font-weight: 300;
+        }
+
+        .about-btn {
+            background: linear-gradient(45deg, #00ff41, #32cd32);
+            border: none;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .about-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 65, 0.4);
+        }
+
+        .about-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 100px 20px 40px 20px;
+        }
+
+        /* Stats Panel with Heatmap */
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333333;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.1);
+        }
+
+        .heatmap-container {
+            margin-bottom: 30px;
+        }
+
+        .heatmap-title {
+            font-size: 1.5rem;
+            color: #00ff41;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .world-map {
+            width: 100%;
+            height: 400px;
+            background: #111111;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSI1MDAiIHZpZXdCb3g9IjAgMCAxMDAwIDUwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMDAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMDAyMjAwIi8+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPHBhdGggZD0iTTEwMCwxMDAgTDMwMCwxMDAgTDMwMCwyMDAgTDEwMCwyMDAgWiIgZmlsbD0iIzAwNDQwMCIvPgo8cGF0aCBkPSJNMzUwLDEwMCBMNTUwLDEwMCBMNTUwLDIwMCBMMzUwLDIwMCBaIiBmaWxsPSIjMDA0NDAwIi8+CjxwYXRoIGQ9Ik02MDAsMTAwIEw4MDAsMTAwIEw4MDAsMjAwIEw2MDAsMjAwIFoiIGZpbGw9IiMwMDQ0MDAiLz4KPHBhdGggZD0iTTEwMCwyNTAgTDMwMCwyNTAgTDMwMCwzNTAgTDEwMCwzNTAgWiIgZmlsbD0iIzAwNDQwMCIvPgo8cGF0aCBkPSJNMzUwLDI1MCBMNTUwLDI1MCBMNTUwLDM1MCBMMzUwLDM1MCBaIiBmaWxsPSIjMDA0NDAwIi8+CjxwYXRoIGQ9Ik02MDAsMjUwIEw4MDAsMjUwIEw4MDAsMzUwIEw2MDAsMzUwIFoiIGZpbGw9IiMwMDQ0MDAiLz4KPHBhdGggZD0iTTEwMCw0MDAgTDMwMCw0MDAgTDMwMCw1MDAgTDEwMCw1MDAgWiIgZmlsbD0iIzAwNDQwMCIvPgo8cGF0aCBkPSJNMzUwLDQwMCBMNTUwLDQwMCBMNTUwLDUwMCBMMzUwLDUwMCBaIiBmaWxsPSIjMDA0NDAwIi8+CjxwYXRoIGQ9Ik02MDAsNDAwIEw4MDAsNDAwIEw4MDAsNTAwIEw2MDAsNTAwIFoiIGZpbGw9IiMwMDQ0MDAiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwMjIwMDtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDAxMTAwO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333333;
+        }
+
+        .attack-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ff0040;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .attack-dot.critical {
+            background: #ff0040;
+            box-shadow: 0 0 10px #ff0040;
+        }
+
+        .attack-dot.high {
+            background: #ff8c00;
+            box-shadow: 0 0 8px #ff8c00;
+        }
+
+        .attack-dot.medium {
+            background: #ffd700;
+            box-shadow: 0 0 6px #ffd700;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid #333333;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: #00ff41;
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            color: #00ff41;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #cccccc;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin: 60px 0 40px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333333;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            color: #00ff41;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            color: #cccccc;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Grid Layout */
+        .threats-grid, .attacks-grid, .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        /* Threat/Attack Cards */
+        .threat-card, .attack-card, .game-card {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.95), rgba(30, 30, 30, 0.95));
+            border: 1px solid #333333;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .threat-card:hover, .attack-card:hover, .game-card:hover {
+            transform: translateY(-8px);
+            border-color: #00ff41;
+            box-shadow: 0 15px 40px rgba(0, 255, 65, 0.3);
+            background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(40, 40, 40, 0.95));
+        }
+        
+        /* Touch-friendly interactions for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .threat-card:active, .attack-card:active, .game-card:active {
+                transform: translateY(-4px);
+                border-color: #00ff41;
+                box-shadow: 0 8px 20px rgba(0, 255, 65, 0.3);
+            }
+            
+            .scan-button:active {
+                transform: scale(0.95);
+            }
+            
+            .play-button:active {
+                transform: scale(0.95);
+            }
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .threat-card:hover .card-icon,
+        .attack-card:hover .card-icon,
+        .game-card:hover .card-icon {
+            transform: scale(1.1) rotateY(360deg);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .card-description {
+            color: #cccccc;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .card-severity {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .severity-critical {
+            background: linear-gradient(45deg, #ff0040, #ff4070);
+            color: white;
+        }
+
+        .severity-high {
+            background: linear-gradient(45deg, #ff8c00, #ffb347);
+            color: white;
+        }
+
+        .severity-medium {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: black;
+        }
+
+        .severity-low {
+            background: linear-gradient(45deg, #32cd32, #90ee90);
+            color: white;
+        }
+
+        /* Game specific styling */
+        .game-card {
+            border-color: #00ff41;
+        }
+
+        .game-card .card-title {
+            color: #00ff41;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #00ff41, #32cd32);
+            border: none;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.4);
+        }
+
+        /* Interactive Elements */
+        .scan-button {
+            background: linear-gradient(45deg, #00ff41, #32cd32);
+            border: none;
+            color: black;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            font-family: inherit;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .scan-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.5);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98));
+            margin: 3% auto;
+            padding: 40px;
+            border: 1px solid #333333;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            color: #ffffff;
+            position: relative;
+            max-height: 85vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .close {
+            color: #ff0040;
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 25px;
+            top: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: #ff4070;
+            transform: scale(1.2);
+        }
+
+        .modal h2 {
+            color: #00ff41;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            font-weight: 600;
+        }
+
+        .modal h3 {
+            color: #00ff41;
+            margin: 25px 0 15px;
+            font-size: 1.3rem;
+        }
+
+        .modal p, .modal li {
+            line-height: 1.7;
+            margin-bottom: 12px;
+            color: #cccccc;
+        }
+
+        .modal ul {
+            margin-left: 25px;
+        }
+
+        /* Game Modal Styles */
+        .game-area {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+
+        .phishing-game {
+            text-align: center;
+        }
+
+        .fake-login {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 400px;
+            border: 1px solid #ddd;
+        }
+
+        .fake-login input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .fake-login button {
+            width: 100%;
+            padding: 10px;
+            background: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .game-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .game-result.success {
+            background: rgba(50, 205, 50, 0.2);
+            color: #32cd32;
+            border: 1px solid #32cd32;
+        }
+
+        .game-result.warning {
+            background: rgba(255, 140, 0, 0.2);
+            color: #ff8c00;
+            border: 1px solid #ff8c00;
+        }
+
+        /* SQL Injection Game */
+        .sql-game {
+            text-align: left;
+        }
+
+        .sql-input {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            color: #00ff41;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+
+        .sql-results {
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            min-height: 100px;
+            border: 1px solid #333;
+        }
+
+        /* XSS Game */
+        .xss-game textarea {
+            width: 100%;
+            height: 100px;
+            background: #1a1a1a;
+            color: #00ff41;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .xss-output {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            min-height: 100px;
+            border: 1px solid #ccc;
+        }
+
+        /* Responsive Design */
+        
+        /* Large tablets and small desktops */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+                padding: 90px 15px 30px 15px;
+            }
+            
+            .threats-grid, .attacks-grid, .games-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .about-btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Tablets */
+        @media (max-width: 768px) {
+            .container {
+                padding: 80px 10px 20px 10px;
+            }
+            
+            .header {
+                padding: 12px 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header-left {
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 1.6rem;
+                margin-bottom: 3px;
+            }
+            
+            .header p {
+                font-size: 0.85rem;
+            }
+            
+            .about-btn {
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .threats-grid, .attacks-grid, .games-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .stat-item {
+                padding: 15px;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+            }
+            
+            .stat-label {
+                font-size: 0.8rem;
+            }
+            
+            .section-header {
+                margin: 40px 0 25px;
+                padding: 20px 15px;
+            }
+            
+            .section-header h2 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+            
+            .section-header p {
+                font-size: 1rem;
+            }
+            
+            .threat-card, .attack-card, .game-card {
+                padding: 20px;
+            }
+            
+            .card-title {
+                font-size: 1.2rem;
+            }
+            
+            .card-description {
+                font-size: 0.9rem;
+            }
+            
+            .card-icon {
+                font-size: 2.8rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+                padding: 20px;
+                max-height: 90vh;
+            }
+            
+            .modal h2 {
+                font-size: 1.8rem;
+            }
+            
+            .modal h3 {
+                font-size: 1.1rem;
+            }
+            
+            .world-map {
+                height: 300px;
+            }
+            
+            .heatmap-title {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+            
+            .scan-button {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Mobile phones */
+        @media (max-width: 480px) {
+            .container {
+                padding: 70px 8px 15px 8px;
+            }
+            
+            .header-content {
+                gap: 12px;
+            }
+            
+            .about-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+            
+            .about-me-card {
+                padding: 25px 20px;
+            }
+            
+            .developer-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .developer-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 3rem;
+            }
+            
+            .developer-details h3 {
+                font-size: 1.6rem;
+            }
+            
+            .developer-title {
+                font-size: 1rem;
+            }
+            
+            .skills-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .skill-item {
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .project-item {
+                padding: 15px;
+                gap: 12px;
+            }
+            
+            .project-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+            
+            .project-info h5 {
+                font-size: 1rem;
+            }
+            
+            .project-info p {
+                font-size: 0.85rem;
+            }
+            
+            .contact-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .contact-btn {
+                justify-content: center;
+                padding: 15px 20px;
+            }
+            
+            .header {
+                padding: 10px 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.4rem;
+                letter-spacing: 1px;
+            }
+            
+            .header p {
+                font-size: 0.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stat-item {
+                padding: 12px;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+            
+            .section-header {
+                margin: 30px 0 20px;
+                padding: 15px 10px;
+            }
+            
+            .section-header h2 {
+                font-size: 1.3rem;
+            }
+            
+            .section-header p {
+                font-size: 0.9rem;
+            }
+            
+            .threat-card, .attack-card, .game-card {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+            
+            .card-title {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .card-description {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+            
+            .card-icon {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+            
+            .card-severity {
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+                font-size: 0.7rem;
+            }
+            
+            .modal-content {
+                width: 98%;
+                margin: 1% auto;
+                padding: 15px;
+                max-height: 95vh;
+            }
+            
+            .modal h2 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+            }
+            
+            .modal h3 {
+                font-size: 1rem;
+                margin: 20px 0 10px;
+            }
+            
+            .modal p, .modal li {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+            
+            .world-map {
+                height: 250px;
+            }
+            
+            .heatmap-title {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .scan-button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                margin: 20px auto;
+            }
+            
+            .play-button {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .close {
+                font-size: 24px;
+                right: 15px;
+                top: 15px;
+            }
+            
+            .stats-panel {
+                padding: 20px 15px;
+                margin: 20px 0;
+            }
+            
+            .heatmap-container {
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* Extra small phones */
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .header p {
+                font-size: 0.75rem;
+            }
+            
+            .container {
+                padding: 65px 5px 10px 5px;
+            }
+            
+            .threat-card, .attack-card, .game-card {
+                padding: 12px;
+            }
+            
+            .card-title {
+                font-size: 1rem;
+            }
+            
+            .card-description {
+                font-size: 0.8rem;
+            }
+            
+            .card-icon {
+                font-size: 2.2rem;
+            }
+            
+            .world-map {
+                height: 200px;
+            }
+            
+            .modal-content {
+                padding: 12px;
+            }
+            
+            .modal h2 {
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* Landscape orientation for phones */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .header {
+                padding: 8px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.3rem;
+                margin-bottom: 2px;
+            }
+            
+            .header p {
+                font-size: 0.8rem;
+            }
+            
+            .container {
+                padding: 60px 10px 15px 10px;
+            }
+            
+            .world-map {
+                height: 200px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+            
+            .stat-item {
+                padding: 10px;
+            }
+            
+            .stat-number {
+                font-size: 1.3rem;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .attack-dot {
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            
+            .threat-card, .attack-card, .game-card {
+                border-width: 0.5px;
+            }
+        }
+
+        /* About Me Section Styles */
+        .about-me-container {
+            margin: 40px 0;
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .about-me-container.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .about-me-card {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.95), rgba(30, 30, 30, 0.95));
+            border: 1px solid #333333;
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 40px rgba(0, 255, 65, 0.1);
+        }
+
+        .developer-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 25px;
+        }
+
+        .developer-avatar {
+            font-size: 4rem;
+            background: linear-gradient(45deg, #00ff41, #32cd32);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .developer-details h3 {
+            color: #00ff41;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .developer-title {
+            color: #ff8c00;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .developer-description {
+            color: #cccccc;
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        .skills-section, .projects-section, .contact-section {
+            margin-top: 35px;
+        }
+
+        .skills-section h4, .projects-section h4, .contact-section h4 {
+            color: #00ff41;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .skill-item {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid #00ff41;
+            border-radius: 25px;
+            padding: 12px 20px;
+            text-align: center;
+            color: #00ff41;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .skill-item:hover {
+            background: rgba(0, 255, 65, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+        }
+
+        .projects-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .project-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .project-item:hover {
+            border-color: #00ff41;
+            box-shadow: 0 8px 25px rgba(0, 255, 65, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .project-icon {
+            font-size: 2rem;
+            background: linear-gradient(45deg, #00ff41, #32cd32);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .project-info h5 {
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .project-info p {
+            color: #cccccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .contact-section p {
+            color: #cccccc;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .contact-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .contact-btn {
+            background: linear-gradient(45deg, #00ff41, #32cd32);
+            border: none;
+            color: black;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 65, 0.4);
+        }
+
+        .contact-btn:active {
+            transform: scale(0.95);
+        }
+
+        .github-btn {
+            background: linear-gradient(45deg, #333333, #666666);
+            color: white;
+        }
+
+        .linkedin-btn {
+            background: linear-gradient(45deg, #0077b5, #00a0dc);
+            color: white;
+        }
+
+        .email-btn {
+            background: linear-gradient(45deg, #ea4335, #ff6b6b);
+            color: white;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333333;
+            border-radius: 50%;
+            border-top-color: #00ff41;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Video Background -->
+    <div class="video-background">
+        <video autoplay muted loop>
+            <source src="https://cdn.coverr.co/videos/coverr-digital-matrix-rain-3208/1080p.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <canvas id="matrixCanvas" style="display: none;"></canvas>
+    </div>
+    <div class="video-overlay"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>🛡️ CYBERSECURITY THREAT MATRIX</h1>
+                <p>Professional Interactive Security Operations Center</p>
+            </div>
+            <div class="header-right">
+                <button class="about-btn" onclick="toggleAboutSection()" aria-label="Toggle about section">
+                    <span>👨‍💻</span> About
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Stats Panel with Heatmap -->
+        <div class="stats-panel">
+            <div class="heatmap-container">
+                <div class="heatmap-title">🌍 GLOBAL CYBER ATTACK HEATMAP - LIVE</div>
+                <div class="world-map" id="worldMap">
+                    <!-- Attack dots will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="globalAttacks">0</div>
+                    <div class="stat-label">Global Attacks Today</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="activeThreats">0</div>
+                    <div class="stat-label">Active Threats</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="highRiskCountries">0</div>
+                    <div class="stat-label">High-Risk Countries</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="systemStatus">SECURE</div>
+                    <div class="stat-label">System Status</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="scan-button" onclick="startSystemScan()" aria-label="Start system security scan">🔍 INITIATE THREAT SCAN</button>
+            </div>
+        </div>
+
+        <!-- Interactive Games Section -->
+        <div class="section-header">
+            <h2>🎮 INTERACTIVE SECURITY TRAINING GAMES</h2>
+            <p>Learn cybersecurity concepts through hands-on interactive simulations</p>
+        </div>
+
+        <div class="games-grid" id="gamesGrid">
+            <!-- Games will be dynamically generated -->
+        </div>
+
+        <!-- Threats Section -->
+        <div class="section-header">
+            <h2>🚨 CYBERSECURITY THREATS</h2>
+            <p>Comprehensive analysis of persistent dangers to digital infrastructure</p>
+        </div>
+
+        <div class="threats-grid" id="threatsGrid">
+            <!-- Threats will be dynamically generated -->
+        </div>
+
+        <!-- Attacks Section -->
+        <div class="section-header">
+            <h2>⚔️ ACTIVE ATTACK VECTORS</h2>
+            <p>Technical analysis of current attack methodologies and exploitation techniques</p>
+        </div>
+
+        <div class="attacks-grid" id="attacksGrid">
+            <!-- Attacks will be dynamically generated -->
+        </div>
+
+        <!-- About Me Section -->
+        <div class="section-header">
+            <h2>👨‍💻 ABOUT THE DEVELOPER</h2>
+            <p>Meet the cybersecurity enthusiast behind this interactive threat matrix</p>
+        </div>
+
+        <div class="about-me-container">
+            <div class="about-me-card">
+                <div class="developer-info">
+                    <div class="developer-avatar">🛡️</div>
+                    <div class="developer-details">
+                        <h3>Arush Dubey</h3>
+                        <p class="developer-title">Cybersecurity & Computer Science Student</p>
+                        <p class="developer-description">
+                            Passionate about ethical hacking, network security, and full-stack development. 
+                            Dedicated to creating educational tools that bridge the gap between theoretical 
+                            cybersecurity concepts and practical, hands-on learning experiences.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="skills-section">
+                    <h4>🛠️ Technical Skills</h4>
+                    <div class="skills-grid">
+                        <div class="skill-item">Ethical Hacking</div>
+                        <div class="skill-item">Network Security</div>
+                        <div class="skill-item">Full-Stack Development</div>
+                        <div class="skill-item">Blockchain Technology</div>
+                        <div class="skill-item">Machine Learning</div>
+                        <div class="skill-item">Cyber Forensics</div>
+                        <div class="skill-item">Python Development</div>
+                        <div class="skill-item">Web Applications</div>
+                    </div>
+                </div>
+
+                <div class="projects-section">
+                    <h4>🚀 Notable Projects</h4>
+                    <div class="projects-list">
+                        <div class="project-item">
+                            <span class="project-icon">🔗</span>
+                            <div class="project-info">
+                                <h5>ChainMessenger</h5>
+                                <p>Blockchain-based, end-to-end encrypted chat app using MetaMask and Ethereum</p>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <span class="project-icon">🕵️</span>
+                            <div class="project-info">
+                                <h5>Network Anomaly Detection</h5>
+                                <p>B.Tech project leveraging IP analysis to identify network threats</p>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <span class="project-icon">🔍</span>
+                            <div class="project-info">
+                                <h5>Cyber Forensics Tools</h5>
+                                <p>Log analysis systems for illegal activity detection and investigation</p>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <span class="project-icon">📱</span>
+                            <div class="project-info">
+                                <h5>Flipper Zero Replica</h5>
+                                <p>Replicated Flipper Zero functionality using Raspberry Pi and modules</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-section">
+                    <h4>📧 Get In Touch</h4>
+                    <p>Interested in cybersecurity collaboration, project discussions, or just want to connect?</p>
+                    <div class="contact-buttons">
+                        <button class="contact-btn github-btn" onclick="window.open('https://github.com/yourusername', '_blank')">
+                            <span>🐙</span> GitHub
+                        </button>
+                        <button class="contact-btn linkedin-btn" onclick="window.open('https://linkedin.com/in/yourusername', '_blank')">
+                            <span>💼</span> LinkedIn
+                        </button>
+                        <button class="contact-btn email-btn" onclick="window.open('mailto:your.email@example.com', '_blank')">
+                            <span>📧</span> Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed information -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent">
+                <!-- Modal content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="gameContent">
+                <!-- Game content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

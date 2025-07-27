@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Threat Matrix - Interactive Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0c0c0c 100%);
+            color: #00ff41;
+            min-height: 100vh;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        /* Matrix Rain Effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .matrix-char {
+            position: absolute;
+            color: #00ff41;
+            font-size: 14px;
+            animation: matrixFall linear infinite;
+        }
+
+        @keyframes matrixFall {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid #00ff41;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #ff0040;
+            text-shadow: 0 0 20px #ff0040;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #ff0040, 0 0 30px #ff0040; }
+            to { text-shadow: 0 0 30px #ff0040, 0 0 40px #ff0040; }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #00ff41;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin: 50px 0 30px;
+            padding: 20px;
+            background: rgba(255, 0, 64, 0.1);
+            border: 2px solid #ff0040;
+            border-radius: 10px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            color: #ff0040;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            color: #00ff41;
+            font-size: 1.1rem;
+        }
+
+        /* Grid Layout */
+        .threats-grid, .attacks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        /* Threat/Attack Cards */
+        .threat-card, .attack-card {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+
+        .threat-card:hover, .attack-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: #ff0040;
+            box-shadow: 0 20px 50px rgba(255, 0, 64, 0.3);
+        }
+
+        .threat-card::before, .attack-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff41, #ff0040, #00ff41);
+            border-radius: 15px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .threat-card:hover::before, .attack-card:hover::before {
+            opacity: 1;
+            animation: borderPulse 2s linear infinite;
+        }
+
+        @keyframes borderPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .threat-card:hover .card-icon,
+        .attack-card:hover .card-icon {
+            transform: rotateY(360deg);
+            color: #ff0040;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            color: #00ff41;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .card-description {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .card-severity {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .severity-critical {
+            background: #ff0040;
+            color: white;
+        }
+
+        .severity-high {
+            background: #ff8c00;
+            color: white;
+        }
+
+        .severity-medium {
+            background: #ffd700;
+            color: black;
+        }
+
+        .severity-low {
+            background: #32cd32;
+            color: white;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 65, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: #ff0040;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #00ff41;
+            margin-top: 5px;
+        }
+
+        /* Interactive Elements */
+        .scan-button {
+            background: linear-gradient(45deg, #ff0040, #ff4070);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            font-family: inherit;
+        }
+
+        .scan-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(255, 0, 64, 0.5);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            margin: 5% auto;
+            padding: 30px;
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            color: #00ff41;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #ff0040;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+
+        .close:hover {
+            color: #ff4070;
+        }
+
+        .modal h2 {
+            color: #ff0040;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .modal h3 {
+            color: #00ff41;
+            margin: 20px 0 10px;
+        }
+
+        .modal p, .modal li {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .modal ul {
+            margin-left: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .threats-grid, .attacks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <div class="matrix-bg" id="matrixBg"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>🛡️ CYBERSECURITY THREAT MATRIX 🛡️</h1>
+        <p>Interactive Hub for Cybersecurity Professionals</p>
+        <button class="scan-button" onclick="startSystemScan()">🔍 INITIATE THREAT SCAN</button>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Stats Panel -->
+        <div class="stats-panel">
+            <div class="stat-item">
+                <div class="stat-number" id="threatCount">15</div>
+                <div class="stat-label">Active Threats</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="attackCount">10</div>
+                <div class="stat-label">Attack Vectors</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="criticalCount">8</div>
+                <div class="stat-label">Critical Severity</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="scanStatus">ACTIVE</div>
+                <div class="stat-label">System Status</div>
+            </div>
+        </div>
+
+        <!-- Threats Section -->
+        <div class="section-header">
+            <h2>🚨 CYBERSECURITY THREATS</h2>
+            <p>Persistent dangers that pose ongoing risks to digital infrastructure</p>
+        </div>
+
+        <div class="threats-grid" id="threatsGrid">
+            <!-- Threats will be dynamically generated -->
+        </div>
+
+        <!-- Attacks Section -->
+        <div class="section-header">
+            <h2>⚔️ ACTIVE ATTACK VECTORS</h2>
+            <p>Specific methods and techniques used by threat actors</p>
+        </div>
+
+        <div class="attacks-grid" id="attacksGrid">
+            <!-- Attacks will be dynamically generated -->
+        </div>
+    </div>
+
+    <!-- Modal for detailed information -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent">
+                <!-- Modal content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Threat and Attack Data
+        const threatsData = [
+            {
+                id: 'malware',
+                title: 'Malware',
+                icon: '🦠',
+                severity: 'critical',
+                description: 'Malicious software designed to damage, disrupt, or gain unauthorized access to systems.',
+                details: {
+                    definition: 'Malware is a broad category of malicious software including viruses, worms, trojans, ransomware, spyware, and adware.',
+                    howItWorks: 'Malware typically infiltrates systems through email attachments, infected websites, USB drives, or software vulnerabilities. Once installed, it can steal data, encrypt files, or provide backdoor access.',
+                    prevention: ['Use reputable antivirus software', 'Keep systems updated', 'Avoid suspicious downloads', 'Regular system backups'],
+                    realWorldExample: 'WannaCry ransomware attack in 2017 affected over 300,000 computers across 150+ countries.'
+                }
+            },
+            {
+                id: 'phishing',
+                title: 'Phishing',
+                icon: '🎣',
+                severity: 'high',
+                description: 'Fraudulent attempts to obtain sensitive information by disguising as trustworthy entities.',
+                details: {
+                    definition: 'Phishing is a social engineering attack where attackers impersonate legitimate organizations to steal credentials, financial data, or personal information.',
+                    howItWorks: 'Attackers send deceptive emails, SMS, or create fake websites that mimic legitimate services. Victims unknowingly provide sensitive information.',
+                    prevention: ['Verify sender authenticity', 'Check URLs carefully', 'Use multi-factor authentication', 'Employee training programs'],
+                    realWorldExample: 'Google and Facebook lost $100 million to a phishing scam between 2013-2015.'
+                }
+            },
+            {
+                id: 'ransomware',
+                title: 'Ransomware',
+                icon: '🔒',
+                severity: 'critical',
+                description: 'Malicious software that encrypts victim\'s files and demands payment for decryption.',
+                details: {
+                    definition: 'Ransomware is a type of malware that encrypts files on infected systems and demands payment (usually cryptocurrency) for the decryption key.',
+                    howItWorks: 'Typically spreads through phishing emails, exploit kits, or RDP attacks. Once executed, it encrypts files and displays ransom demands.',
+                    prevention: ['Regular backups', 'Network segmentation', 'Employee training', 'Patch management', 'Email filtering'],
+                    realWorldExample: 'Colonial Pipeline attack in 2021 disrupted fuel supply across the Eastern United States.'
+                }
+            },
+            {
+                id: 'insider-threat',
+                title: 'Insider Threats',
+                icon: '👤',
+                severity: 'high',
+                description: 'Security risks that come from people within the organization.',
+                details: {
+                    definition: 'Insider threats involve current or former employees, contractors, or business associates who have authorized access but use it maliciously or negligently.',
+                    howItWorks: 'Insiders may steal data, sabotage systems, or provide information to external attackers. Can be intentional or unintentional.',
+                    prevention: ['Access controls', 'Monitoring user activity', 'Background checks', 'Regular access reviews', 'Security awareness training'],
+                    realWorldExample: 'Edward Snowden leaked classified NSA documents in 2013, highlighting insider threat risks.'
+                }
+            },
+            {
+                id: 'apt',
+                title: 'Advanced Persistent Threats',
+                icon: '🎯',
+                severity: 'critical',
+                description: 'Sophisticated, long-term cyber attacks targeting specific organizations.',
+                details: {
+                    definition: 'APTs are prolonged and targeted cyberattacks where intruders gain access to networks and remain undetected for extended periods.',
+                    howItWorks: 'Multi-stage attacks involving reconnaissance, initial compromise, establishing foothold, privilege escalation, and data exfiltration.',
+                    prevention: ['Network monitoring', 'Threat intelligence', 'Endpoint detection', 'Incident response planning', 'Regular security assessments'],
+                    realWorldExample: 'SolarWinds hack affected 18,000+ organizations including government agencies and Fortune 500 companies.'
+                }
+            },
+            {
+                id: 'zero-day',
+                title: 'Zero-Day Exploits',
+                icon: '⚡',
+                severity: 'critical',
+                description: 'Attacks exploiting previously unknown software vulnerabilities.',
+                details: {
+                    definition: 'Zero-day exploits target software vulnerabilities that are unknown to vendors and security researchers, making them particularly dangerous.',
+                    howItWorks: 'Attackers discover and exploit vulnerabilities before patches are available, giving defenders zero days to prepare.',
+                    prevention: ['Behavioral analysis tools', 'Application sandboxing', 'Network segmentation', 'Vulnerability management', 'Threat hunting'],
+                    realWorldExample: 'Stuxnet worm used multiple zero-day exploits to target Iranian nuclear facilities.'
+                }
+            },
+            {
+                id: 'ddos',
+                title: 'DDoS Attacks',
+                icon: '🌊',
+                severity: 'high',
+                description: 'Distributed denial-of-service attacks that overwhelm systems with traffic.',
+                details: {
+                    definition: 'DDoS attacks involve multiple compromised systems flooding a target with traffic to make services unavailable to legitimate users.',
+                    howItWorks: 'Attackers use botnets to generate massive amounts of traffic, overwhelming target servers, networks, or applications.',
+                    prevention: ['DDoS protection services', 'Rate limiting', 'Traffic filtering', 'Load balancing', 'Incident response plans'],
+                    realWorldExample: 'GitHub faced a 1.35 Tbps DDoS attack in 2018, the largest recorded at the time.'
+                }
+            },
+            {
+                id: 'supply-chain',
+                title: 'Supply Chain Attacks',
+                icon: '🔗',
+                severity: 'critical',
+                description: 'Attacks targeting less-secure elements in the supply chain network.',
+                details: {
+                    definition: 'Supply chain attacks target third-party vendors, suppliers, or service providers to gain access to primary targets.',
+                    howItWorks: 'Attackers compromise software or hardware at the source, affecting all downstream customers and users.',
+                    prevention: ['Vendor security assessments', 'Code signing verification', 'Supply chain monitoring', 'Third-party risk management'],
+                    realWorldExample: 'Kaseya supply chain attack in 2021 affected thousands of managed service providers and their clients.'
+                }
+            },
+            {
+                id: 'social-engineering',
+                title: 'Social Engineering',
+                icon: '🎭',
+                severity: 'high',
+                description: 'Psychological manipulation to trick people into divulging confidential information.',
+                details: {
+                    definition: 'Social engineering exploits human psychology rather than technical vulnerabilities to gain unauthorized access to systems or information.',
+                    howItWorks: 'Attackers use psychological manipulation techniques like pretexting, baiting, quid pro quo, and tailgating to deceive victims.',
+                    prevention: ['Security awareness training', 'Verification procedures', 'Access controls', 'Incident reporting systems'],
+                    realWorldExample: 'Kevin Mitnick famously used social engineering to gain access to computer networks before his arrest in 1995.'
+                }
+            },
+            {
+                id: 'cryptojacking',
+                title: 'Cryptojacking',
+                icon: '💰',
+                severity: 'medium',
+                description: 'Unauthorized use of someone\'s computer to mine cryptocurrency.',
+                details: {
+                    definition: 'Cryptojacking involves secretly using victim computers or mobile devices to mine cryptocurrency without their knowledge or consent.',
+                    howItWorks: 'Malicious scripts run in web browsers or installed malware uses device resources to mine cryptocurrency for attackers.',
+                    prevention: ['Ad blockers', 'Anti-cryptojacking tools', 'Regular system monitoring', 'Employee education', 'Network monitoring'],
+                    realWorldExample: 'Coinhive was widely used for cryptojacking before shutting down in 2019, affecting millions of websites.'
+                }
+            },
+            {
+                id: 'iot-threats',
+                title: 'IoT Security Threats',
+                icon: '🏠',
+                severity: 'medium',
+                description: 'Vulnerabilities in Internet of Things devices and networks.',
+                details: {
+                    definition: 'IoT threats exploit weak security in connected devices like smart home appliances, industrial sensors, and wearable technology.',
+                    howItWorks: 'Attackers target default passwords, unpatched firmware, and weak encryption in IoT devices to gain network access.',
+                    prevention: ['Device inventory', 'Default password changes', 'Regular updates', 'Network segmentation', 'IoT security frameworks'],
+                    realWorldExample: 'Mirai botnet infected hundreds of thousands of IoT devices to launch massive DDoS attacks in 2016.'
+                }
+            },
+            {
+                id: 'cloud-threats',
+                title: 'Cloud Security Threats',
+                icon: '☁️',
+                severity: 'high',
+                description: 'Security risks associated with cloud computing environments.',
+                details: {
+                    definition: 'Cloud threats include misconfigurations, data breaches, account hijacking, and insider threats specific to cloud environments.',
+                    howItWorks: 'Attackers exploit misconfigured cloud services, weak access controls, or compromised credentials to access cloud resources.',
+                    prevention: ['Cloud security posture management', 'Identity and access management', 'Encryption', 'Regular audits', 'Shared responsibility model understanding'],
+                    realWorldExample: 'Capital One data breach in 2019 exposed 100 million customer records due to misconfigured cloud infrastructure.'
+                }
+            },
+            {
+                id: 'ai-threats',
+                title: 'AI-Powered Threats',
+                icon: '🤖',
+                severity: 'high',
+                description: 'Threats enhanced or created using artificial intelligence technologies.',
+                details: {
+                    definition: 'AI-powered threats use machine learning and artificial intelligence to enhance attack effectiveness, automate processes, or create new attack vectors.',
+                    howItWorks: 'AI can generate convincing phishing emails, automate vulnerability discovery, create deepfakes, or enhance malware evasion.',
+                    prevention: ['AI-powered defense systems', 'Behavioral analysis', 'Human verification processes', 'AI ethics frameworks'],
+                    realWorldExample: 'Deepfake technology has been used to create convincing fake audio and video for social engineering attacks.'
+                }
+            },
+            {
+                id: 'mobile-threats',
+                title: 'Mobile Security Threats',
+                icon: '📱',
+                severity: 'medium',
+                description: 'Security risks targeting mobile devices and applications.',
+                details: {
+                    definition: 'Mobile threats include malicious apps, SMS phishing, device theft, and attacks on mobile operating systems.',
+                    howItWorks: 'Attackers target mobile devices through app stores, SMS messages, public Wi-Fi, or physical access to steal data or gain control.',
+                    prevention: ['Mobile device management', 'App store security', 'Regular updates', 'Secure communications', 'User education'],
+                    realWorldExample: 'Pegasus spyware has been used to target journalists, activists, and government officials worldwide.'
+                }
+            },
+            {
+                id: 'quantum-threats',
+                title: 'Quantum Computing Threats',
+                icon: '⚛️',
+                severity: 'low',
+                description: 'Future threats posed by quantum computing to current cryptographic systems.',
+                details: {
+                    definition: 'Quantum threats involve the potential for quantum computers to break current encryption methods, compromising data security.',
+                    howItWorks: 'Quantum computers could theoretically break RSA and ECC encryption much faster than classical computers using algorithms like Shor\'s.',
+                    prevention: ['Post-quantum cryptography research', 'Quantum-resistant algorithms', 'Crypto-agility planning', 'Timeline monitoring'],
+                    realWorldExample: 'NIST is standardizing post-quantum cryptographic algorithms in preparation for quantum computing advances.'
+                }
+            }
+        ];
+
+        const attacksData = [
+            {
+                id: 'sql-injection',
+                title: 'SQL Injection',
+                icon: '💉',
+                severity: 'critical',
+                description: 'Injection of malicious SQL code into application queries.',
+                details: {
+                    definition: 'SQL injection occurs when attackers insert malicious SQL code into application inputs that are incorporated into database queries.',
+                    howItWorks: 'Attackers exploit poorly sanitized user inputs to manipulate SQL queries, potentially accessing, modifying, or deleting database data.',
+                    prevention: ['Parameterized queries', 'Input validation', 'Stored procedures', 'Least privilege access', 'Web application firewalls'],
+                    realWorldExample: 'Heartland Payment Systems breach in 2008 exposed 134 million credit card numbers using SQL injection.'
+                }
+            },
+            {
+                id: 'xss',
+                title: 'Cross-Site Scripting (XSS)',
+                icon: '🔧',
+                severity: 'high',
+                description: 'Injection of malicious scripts into web pages viewed by other users.',
+                details: {
+                    definition: 'XSS attacks inject malicious client-side scripts into web pages that are then executed by other users\' browsers.',
+                    howItWorks: 'Attackers exploit insufficient input validation to inject JavaScript code that steals cookies, session tokens, or performs actions on behalf of users.',
+                    prevention: ['Input validation and sanitization', 'Content Security Policy', 'Output encoding', 'HTTP-only cookies'],
+                    realWorldExample: 'MySpace Samy worm in 2005 infected over one million users in less than 20 hours using XSS.'
+                }
+            },
+            {
+                id: 'mitm',
+                title: 'Man-in-the-Middle Attack',
+                icon: '👥',
+                severity: 'high',
+                description: 'Interception and manipulation of communications between two parties.',
+                details: {
+                    definition: 'MITM attacks involve intercepting communications between two parties without their knowledge to steal or manipulate data.',
+                    howItWorks: 'Attackers position themselves between communicating parties, often on unsecured networks, to intercept and potentially modify data.',
+                    prevention: ['HTTPS/TLS encryption', 'Certificate pinning', 'VPN usage', 'Avoid public Wi-Fi for sensitive activities'],
+                    realWorldExample: 'NSA\'s QUANTUM program allegedly used MITM techniques to inject malware into target computers.'
+                }
+            },
+            {
+                id: 'brute-force',
+                title: 'Brute Force Attack',
+                icon: '🔨',
+                severity: 'medium',
+                description: 'Systematic attempts to guess passwords or encryption keys.',
+                details: {
+                    definition: 'Brute force attacks involve systematically trying all possible combinations of passwords or keys until the correct one is found.',
+                    howItWorks: 'Attackers use automated tools to rapidly try millions of password combinations against user accounts or encrypted data.',
+                    prevention: ['Strong password policies', 'Account lockout mechanisms', 'Multi-factor authentication', 'Rate limiting', 'CAPTCHA'],
+                    realWorldExample: 'LinkedIn password breach in 2012 exposed 6.5 million hashed passwords that were later cracked using brute force methods.'
+                }
+            },
+            {
+                id: 'privilege-escalation',
+                title: 'Privilege Escalation',
+                icon: '📈',
+                severity: 'critical',
+                description: 'Gaining higher-level permissions than originally granted.',
+                details: {
+                    definition: 'Privilege escalation involves exploiting vulnerabilities or misconfigurations to gain elevated access rights within a system.',
+                    howItWorks: 'Attackers exploit software bugs, weak configurations, or social engineering to gain administrative or root-level access.',
+                    prevention: ['Principle of least privilege', 'Regular patching', 'Access controls', 'Privilege monitoring', 'Code reviews'],
+                    realWorldExample: 'Windows LPE vulnerabilities like CVE-2019-1388 allowed attackers to gain SYSTEM-level privileges.'
+                }
+            },
+            {
+                id: 'session-hijacking',
+                title: 'Session Hijacking',
+                icon: '🔑',
+                severity: 'high',
+                description: 'Unauthorized access to user sessions by stealing session tokens.',
+                details: {
+                    definition: 'Session hijacking involves stealing or predicting session tokens to impersonate legitimate users and gain unauthorized access.',
+                    howItWorks: 'Attackers capture session cookies or tokens through various methods and use them to access user accounts without credentials.',
+                    prevention: ['Secure session management', 'HTTPS enforcement', 'Session timeout', 'Token regeneration', 'HTTP-only cookies'],
+                    realWorldExample: 'Firesheep tool demonstrated session hijacking vulnerabilities on unsecured Wi-Fi networks.'
+                }
+            },
+            {
+                id: 'buffer-overflow',
+                title: 'Buffer Overflow',
+                icon: '📊',
+                severity: 'critical',
+                description: 'Overwriting memory buffers to execute malicious code.',
+                details: {
+                    definition: 'Buffer overflow attacks exploit programs that don\'t properly check input length, allowing attackers to overwrite memory and execute arbitrary code.',
+                    howItWorks: 'Attackers send more data than a buffer can handle, overwriting adjacent memory locations with malicious code or instructions.',
+                    prevention: ['Input validation', 'Safe programming practices', 'Stack canaries', 'Address space layout randomization', 'Code reviews'],
+                    realWorldExample: 'Morris Worm in 1988 exploited buffer overflow vulnerabilities to become one of the first major internet worms.'
+                }
+            },
+            {
+                id: 'dns-poisoning',
+                title: 'DNS Poisoning',
+                icon: '🌐',
+                severity: 'high',
+                description: 'Corrupting DNS resolution to redirect traffic to malicious servers.',
+                details: {
+                    definition: 'DNS poisoning involves corrupting Domain Name System data to redirect users from legitimate websites to malicious ones.',
+                    howItWorks: 'Attackers exploit DNS vulnerabilities or compromise DNS servers to return false IP addresses for domain queries.',
+                    prevention: ['DNS Security Extensions (DNSSEC)', 'Secure DNS servers', 'DNS monitoring', 'Network segmentation'],
+                    realWorldExample: 'Kaminsky DNS vulnerability in 2008 affected most DNS implementations worldwide.'
+                }
+            },
+            {
+                id: 'clickjacking',
+                title: 'Clickjacking',
+                icon: '👆',
+                severity: 'medium',
+                description: 'Tricking users into clicking on something different from what they perceive.',
+                details: {
+                    definition: 'Clickjacking tricks users into clicking on hidden or disguised elements by overlaying transparent frames over legitimate content.',
+                    howItWorks: 'Attackers use invisible iframes or CSS to hide malicious elements behind legitimate-looking buttons or links.',
+                    prevention: ['X-Frame-Options header', 'Content Security Policy', 'Frame-busting JavaScript', 'UI redressing protection'],
+                    realWorldExample: 'Adobe Flash clickjacking attacks tricked users into enabling webcam and microphone access.'
+                }
+            },
+            {
+                id: 'csrf',
+                title: 'Cross-Site Request Forgery',
+                icon: '🔄',
+                severity: 'medium',
+                description: 'Forcing users to perform unwanted actions on authenticated websites.',
+                details: {
+                    definition: 'CSRF attacks trick authenticated users into performing unintended actions on web applications where they are logged in.',
+                    howItWorks: 'Attackers create malicious web pages or emails that contain requests to target applications, executed using the victim\'s credentials.',
+                    prevention: ['CSRF tokens', 'SameSite cookies', 'Origin validation', 'Custom headers', 'Double-submit cookies'],
+                    realWorldExample: 'Gmail CSRF vulnerability in 2007 allowed attackers to access user email accounts through malicious websites.'
+                }
+            }
+        ];
+
+        // Matrix Rain Effect
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrixBg');
+            const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = characters[Math.floor(Math.random() * characters.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                char.style.animationDelay = Math.random() * 2 + 's';
+                matrixBg.appendChild(char);
+            }
+        }
+
+        // Generate threat cards
+        function generateThreatCards() {
+            const grid = document.getElementById('threatsGrid');
+            threatsData.forEach(threat => {
+                const card = document.createElement('div');
+                card.className = 'threat-card';
+                card.onclick = () => showDetails(threat);
+                
+                card.innerHTML = `
+                    <div class="card-severity severity-${threat.severity}">${threat.severity.toUpperCase()}</div>
+                    <div class="card-icon">${threat.icon}</div>
+                    <div class="card-title">${threat.title}</div>
+                    <div class="card-description">${threat.description}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Generate attack cards
+        function generateAttackCards() {
+            const grid = document.getElementById('attacksGrid');
+            attacksData.forEach(attack => {
+                const card = document.createElement('div');
+                card.className = 'attack-card';
+                card.onclick = () => showDetails(attack);
+                
+                card.innerHTML = `
+                    <div class="card-severity severity-${attack.severity}">${attack.severity.toUpperCase()}</div>
+                    <div class="card-icon">${attack.icon}</div>
+                    <div class="card-title">${attack.title}</div>
+                    <div class="card-description">${attack.description}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Show detailed information in modal
+        function showDetails(item) {
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <h2>${item.icon} ${item.title}</h2>
+                <div class="card-severity severity-${item.severity}" style="position: static; margin-bottom: 20px; display: inline-block;">
+                    ${item.severity.toUpperCase()} SEVERITY
+                </div>
+                
+                <h3>📋 Definition</h3>
+                <p>${item.details.definition}</p>
+                
+                <h3>⚙️ How It Works</h3>
+                <p>${item.details.howItWorks}</p>
+                
+                <h3>🛡️ Prevention Measures</h3>
+                <ul>
+                    ${item.details.prevention.map(measure => `<li>${measure}</li>`).join('')}
+                </ul>
+                
+                <h3>🌍 Real-World Example</h3>
+                <p>${item.details.realWorldExample}</p>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // System scan animation
+        function startSystemScan() {
+            const button = document.querySelector('.scan-button');
+            const scanStatus = document.getElementById('scanStatus');
+            
+            button.textContent = '🔄 SCANNING...';
+            button.style.background = 'linear-gradient(45deg, #ff8c00, #ffd700)';
+            scanStatus.textContent = 'SCANNING';
+            scanStatus.style.color = '#ff8c00';
+            
+            setTimeout(() => {
+                button.textContent = '✅ SCAN COMPLETE';
+                button.style.background = 'linear-gradient(45deg, #32cd32, #00ff41)';
+                scanStatus.textContent = 'SECURE';
+                scanStatus.style.color = '#32cd32';
+                
+                // Animate threat counters
+                animateCounter('threatCount', 15);
+                animateCounter('attackCount', 10);
+                animateCounter('criticalCount', 8);
+                
+                setTimeout(() => {
+                    button.textContent = '🔍 INITIATE THREAT SCAN';
+                    button.style.background = 'linear-gradient(45deg, #ff0040, #ff4070)';
+                    scanStatus.textContent = 'ACTIVE';
+                    scanStatus.style.color = '#00ff41';
+                }, 3000);
+            }, 2000);
+        }
+
+        // Animate counter
+        function animateCounter(elementId, target) {
+            const element = document.getElementById(elementId);
+            let current = 0;
+            const increment = target / 20;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 100);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            createMatrixRain();
+            generateThreatCards();
+            generateAttackCards();
+            
+            // Modal close functionality
+            const modal = document.getElementById('detailModal');
+            const closeBtn = document.querySelector('.close');
+            
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+            
+            // Add keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // Add periodic matrix character updates
+        setInterval(() => {
+            const chars = document.querySelectorAll('.matrix-char');
+            chars.forEach(char => {
+                if (Math.random() < 0.1) {
+                    const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+                    char.textContent = characters[Math.floor(Math.random() * characters.length)];
+                }
+            });
+        }, 200);
+    </script>
+</body>
+</html>
